@@ -7,6 +7,30 @@
 
 #include <stdio.h>
 
+/* Função que recebe a string de entrada com os números a serem análisados e extrai desta 
+   cada número e os salva em um vetor */
+int receberEntrada(int **numeros)
+{
+
+  char entrada[300]; // Armazena a entrada do programa como uma string
+  char *p;
+  int tam = 0; // Tamanho do vetor que armazena os números
+
+  fgets(entrada, sizeof(entrada), stdin); // Recebemos a string de entrada
+
+  p = strtok(entrada, " \n");     // Selecionamos o primeiro número da entrada
+  for (tam = 0; p != NULL; tam++) // Extraímos os números da string
+  {
+    *numeros = (int *)realloc(*numeros, (sizeof(int) * (tam + 1))); // Alocamos mais espaço para o vetor
+
+    (*numeros)[tam] = atoi(p); // Salvamos no vetor o número convertido para int
+
+    p = strtok(NULL, " \n"); // Selecionamos o próximo número
+  }
+
+  return tam;
+}
+
 /* Função que identifica se o número é primo, retornando o número se ele for 
    primo e -1 se ele não for primo*/
 int checarSePrimo(int numero)
