@@ -7,7 +7,33 @@
 
 #include <stdio.h>
 
-int main() {
+/* Função que identifica se o número é primo, retornando o número se ele for 
+   primo e -1 se ele não for primo*/
+int checarSePrimo(int numero)
+{
+
+  // Casos base
+  if ((numero == 1) || (numero == 0))
+  {
+    return -1;
+  }
+
+  for (int i = 2; i <= numero / 2; ++i)
+  {
+
+    // Se o número não é primo
+    if (numero % i == 0)
+    {
+      numero = -1;
+      break;
+    }
+  }
+
+  return numero;
+}
+
+int main()
+{
 
   int x, y;
 
