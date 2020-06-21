@@ -80,9 +80,11 @@ void *contarPrimos(void *arg)
 int main()
 {
 
-  int x, y;
+  int *numeros = NULL; // Vetor que armazena os números a serem avaliados
+  int totNums = 0;     // Total de números a serem avaliados
 
-  scanf("%d %d\n", &x, &y);
-  printf("%d\n", x + 200);
+  totNums = receberEntrada(&numeros); // Recebemos as entradas do programa
+
+  
   return 0;
 }
