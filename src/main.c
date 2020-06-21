@@ -3,9 +3,15 @@
  * Este programa recebera uma serie de caracteres representando palavras em sua
  * entrada. Ao receber um caractere fim de linha ('\n'), deve imprimir na tela o
  * numero de palavras separadas que recebeu e, apos, encerrar.
+ * 
  */
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+int totPrimos = 0; // Total de números primos encontrados
 
 /* Função que recebe a string de entrada com os números a serem análisados e extrai desta 
    cada número e os salva em um vetor */
@@ -54,6 +60,21 @@ int checarSePrimo(int numero)
   }
 
   return numero;
+}
+
+
+/* Função a ser executada pelo thread, que conta quantos números são primos */
+void *contarPrimos(void *arg)
+{
+  int numero = (int *) arg; // Número a ser avalidado se é primo ou não
+
+  numero = checarSePrimo(numero); // Testamos se o número é primo
+
+  // Se o número é primo
+  if (numero != -1) totPrimos++; // Incrementamos o contador de números primos
+  
+  return NULL;
+
 }
 
 int main()
