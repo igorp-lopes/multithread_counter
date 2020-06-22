@@ -14,7 +14,9 @@
 #define maxThreads 4 // Máximo de threads a serem executadas simultaneamente
 
 int *numeros = NULL; // Vetor que armazena os números a serem avaliados
+int totNums = 0; // Total de números a serem avaliados
 int totPrimos = 0; // Total de números primos encontrados
+int numsAval = 0; // Quantos números já foram avaliados
 
 pthread_mutex_t trava; // Mutex usado para o controle do fluxo de análise
 
@@ -62,6 +64,7 @@ int checarSePrimo(int numero)
       numero = -1;
       break;
     }
+    
   }
 
   return numero;
@@ -72,12 +75,35 @@ int checarSePrimo(int numero)
 void* contarPrimos(void *arg)
 {
   
+  int numero = 0; // Número que será avaliado pela thread
+
   // Salvamos o identificador da thread atual
   int* temp = (int*) arg;
   int identificador = *temp;
 
   printf("\nThread %d foi iniciada\n", identificador);
-  for (int j=0; j<1000000; j++);
+
+  while (1)
+  {
+    // Se todos os números já foram avaliados
+    if (numsAval >= totNums) break;
+
+    pthread_mutex_lock(&trava); // Bloqueamos o acesso das outras threads para realizarmos a análise
+
+    numero = checarSePrimo(numeros[numsAval]); // Testamos se o número é primo
+
+    // Se o número é primo
+    if (numero != -1) totPrimos++; // Incrementamos o contador de números primos
+
+    printf("\nA thread %d fez a analise do numero %d\n", identificador, numeros[numsAval]);
+    numsAval++; // Incrementamos o contador de números analisados
+
+    pthread_mutex_unlock(&trava); // Liberamos o acesso para as outras threads
+
+    for (int j=0; j<1000000; j++); // Gastamos tempo
+
+  }
+  
   printf("\nThread %d foi encerrada\n", identificador);
 
   return NULL;
@@ -86,8 +112,6 @@ void* contarPrimos(void *arg)
 
 int main()
 {
-
-  int totNums = 0; // Total de números a serem avaliados
 
   totNums = receberEntrada(&numeros); // Recebemos as entradas do programa
 
@@ -111,6 +135,8 @@ int main()
   {
     pthread_join(vetThreads[i], NULL);
   }
+
+  printf("%d\n", totPrimos);
 
 
   return 0;
