@@ -1,9 +1,6 @@
-/* Contador de palavras
- *
- * Este programa recebera uma serie de caracteres representando palavras em sua
- * entrada. Ao receber um caractere fim de linha ('\n'), deve imprimir na tela o
- * numero de palavras separadas que recebeu e, apos, encerrar.
- * 
+/* Data de submissão:
+ * Nome: Igor Peterossi Lopes
+ * RA: 174929
  */
 
 #include <stdio.h>
@@ -14,9 +11,9 @@
 #define maxThreads 4 // Máximo de threads a serem executadas simultaneamente
 
 int *numeros = NULL; // Vetor que armazena os números a serem avaliados
-int totNums = 0; // Total de números a serem avaliados
-int totPrimos = 0; // Total de números primos encontrados
-int numsAval = 0; // Quantos números já foram avaliados
+int totNums = 0;     // Total de números a serem avaliados
+int totPrimos = 0;   // Total de números primos encontrados
+int numsAval = 0;    // Quantos números já foram avaliados
 
 pthread_mutex_t trava; // Mutex usado para o controle do fluxo de análise
 
@@ -64,50 +61,37 @@ int checarSePrimo(int numero)
       numero = -1;
       break;
     }
-    
   }
 
   return numero;
 }
 
-
 /* Função a ser executada pelo thread, que conta quantos números são primos */
-void* contarPrimos(void *arg)
+void *contarPrimos()
 {
-  
+
   int numero = 0; // Número que será avaliado pela thread
-
-  // Salvamos o identificador da thread atual
-  int* temp = (int*) arg;
-  int identificador = *temp;
-
-  printf("\nThread %d foi iniciada\n", identificador);
 
   while (1)
   {
     // Se todos os números já foram avaliados
-    if (numsAval >= totNums) break;
+    if (numsAval >= totNums)
+      break;
 
     pthread_mutex_lock(&trava); // Bloqueamos o acesso das outras threads para realizarmos a análise
 
     numero = checarSePrimo(numeros[numsAval]); // Testamos se o número é primo
 
     // Se o número é primo
-    if (numero != -1) totPrimos++; // Incrementamos o contador de números primos
+    if (numero != -1)
+      totPrimos++; // Incrementamos o contador de números primos
 
-    printf("\nA thread %d fez a analise do numero %d\n", identificador, numeros[numsAval]);
     numsAval++; // Incrementamos o contador de números analisados
 
     pthread_mutex_unlock(&trava); // Liberamos o acesso para as outras threads
-
-    for (int j=0; j<1000000; j++); // Gastamos tempo
-
   }
-  
-  printf("\nThread %d foi encerrada\n", identificador);
 
   return NULL;
-
 }
 
 int main()
@@ -116,18 +100,11 @@ int main()
   totNums = receberEntrada(&numeros); // Recebemos as entradas do programa
 
   pthread_t vetThreads[maxThreads]; // Vetor que armazena os endereços das threads criadas
-  int threadIds[maxThreads]; // Vetor que armazena os identificadores de cada thread
 
-  // Atribuindo um identificador para cada thread
+  // Criamos as threads para realizarem as análises dos números
   for (int i = 0; i < maxThreads; i++)
   {
-    threadIds[i] = i + 1;
-  }
-
-  // Criando as threads para realizarem as análises dos números
-  for (int i = 0; i < maxThreads; i++)
-  {
-    pthread_create(&(vetThreads[i]), NULL, contarPrimos, (void*) (&threadIds[i]));
+    pthread_create(&(vetThreads[i]), NULL, contarPrimos, NULL);
   }
 
   // Aguardamos pelo encerramento das threads
@@ -136,8 +113,7 @@ int main()
     pthread_join(vetThreads[i], NULL);
   }
 
-  printf("%d\n", totPrimos);
-
+  printf("%d\n", totPrimos); // Printamos o total de números primos encontrados
 
   return 0;
 }
