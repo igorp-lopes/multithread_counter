@@ -13,8 +13,10 @@
 
 #define maxThreads 4 // Máximo de threads a serem executadas simultaneamente
 
+int *numeros = NULL; // Vetor que armazena os números a serem avaliados
 int totPrimos = 0; // Total de números primos encontrados
-int totThreads = 0; // Total de threads sendo executadas
+
+pthread_mutex_t trava; // Mutex usado para o controle do fluxo de análise
 
 /* Função que recebe a string de entrada com os números a serem análisados e extrai desta 
    cada número e os salva em um vetor */
@@ -69,15 +71,15 @@ int checarSePrimo(int numero)
 /* Função a ser executada pelo thread, que conta quantos números são primos */
 void* contarPrimos(void *arg)
 {
-  int* numero = (int *) arg; // Número a ser avalidado se é primo ou não
-
-  *numero = checarSePrimo(*numero); // Testamos se o número é primo
-
-  // Se o número é primo
-  if (*numero != -1) totPrimos++; // Incrementamos o contador de números primos
-
-  totThreads--; // Decrementamos o contador de threads
   
+  // Salvamos o identificador da thread atual
+  int* temp = (int*) arg;
+  int identificador = *temp;
+
+  printf("\nThread %d foi iniciada\n", identificador);
+  for (int j=0; j<1000000; j++);
+  printf("\nThread %d foi encerrada\n", identificador);
+
   return NULL;
 
 }
@@ -85,27 +87,31 @@ void* contarPrimos(void *arg)
 int main()
 {
 
-  int *numeros = NULL; // Vetor que armazena os números a serem avaliados
-  int totNums = 0;     // Total de números a serem avaliados
-  int numero = 0; // Número selecionado no vetor para ser avaliado 
-
-  pthread_t thread;
-
+  int totNums = 0; // Total de números a serem avaliados
 
   totNums = receberEntrada(&numeros); // Recebemos as entradas do programa
 
-  for (int i = 0; i < totNums; i++)
+  pthread_t vetThreads[maxThreads]; // Vetor que armazena os endereços das threads criadas
+  int threadIds[maxThreads]; // Vetor que armazena os identificadores de cada thread
+
+  // Atribuindo um identificador para cada thread
+  for (int i = 0; i < maxThreads; i++)
   {
-    totThreads++; // Incrementamos o contador de threads
-
-    while (totThreads >= maxThreads); // Se estamos no máximo de threads simultâneas executando, esperamos que uma delas seja finalizada
-  
-    pthread_create(&thread, NULL, contarPrimos, (void*) &(numeros[i]));
-
+    threadIds[i] = i + 1;
   }
 
-  while (totThreads > 0); // Esperamos todas as threads serem finalizadas
-  printf("%d\n", totPrimos); // Printamos o total de números primos encontrados
+  // Criando as threads para realizarem as análises dos números
+  for (int i = 0; i < maxThreads; i++)
+  {
+    pthread_create(&(vetThreads[i]), NULL, contarPrimos, (void*) (&threadIds[i]));
+  }
+
+  // Aguardamos pelo encerramento das threads
+  for (int i = 0; i < maxThreads; i++)
+  {
+    pthread_join(vetThreads[i], NULL);
+  }
+
 
   return 0;
 }
